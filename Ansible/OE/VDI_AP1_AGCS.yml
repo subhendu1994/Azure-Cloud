@@ -48,3 +48,41 @@
       ignore_erros: true
 
 ############################################## System Locale #########################################      
+    - name: Set System Loacale for Korea
+      win_dsc: 
+        resource_name: SystemLocale
+        SystemLocale: 'ko-KR'
+        InSingleInstance: 'Yes'
+      register: SystemLocaleSet
+      when: OE == "AGCSKR"  
+      
+    - name: Set System Loacale for Korea
+      win_dsc: 
+        resource_name: SystemLocale
+        SystemLocale: 'ja-JP'
+        InSingleInstance: 'Yes'
+      register: SystemLocaleSet
+      when: OE == "AGCSJP"
+
+    - name: Reboot after Locale change
+      win_reboot: 
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+      when: SystemLocaleSet.changed
+
+    - name: run maintance defender task 
+      win_shell: Start-ScheduledTask -TaskName "\Microsoft\Windows\Windows Defender\Windows Defender Cache Maintenance"
+
+################################################### APPS ######################################################
+
+    - name: XPS Viewer install - 5657;
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'XPS Viewer'
+        Ensure: 'Present'
+        Executable: 'Installer_XPS-ansible.ps1'
+        Source: '\\aalmpssgp201\sources\Packages\DXC\XPS\' 
+        DetectionFilePath: 'C:\Windows\installer\XPSViewer_Success.txt'
+        Timeout: 1800
+
+        
