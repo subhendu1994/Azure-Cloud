@@ -1,0 +1,11 @@
+---
+- name: Enter the matrix to get hostname.
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: add host to local inventory
+      add_host:
+        groups: VDI_STD_Master_Local
+        name: "{{ HostNameFact }}"  
