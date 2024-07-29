@@ -85,4 +85,97 @@
         DetectionFilePath: 'C:\Windows\installer\XPSViewer_Success.txt'
         Timeout: 1800
 
+    # - name: Citrix_Virtual_Desktop_Agent_Workstation_OS_1912.4000; AppId - 8021;
+    #   win-Dsc: 
+    #     resource_name: InstallerClass
+    #     PackageName: 'VDAWorkstation'
+    #     Ensure: 'Present'
+    #     Executable: 'VDAWorkstationSetup_1912_4000.cmd'
+    #     Source: '{{ CoreApp_Source }}\Citrix\Virtual_Desktop_Agent\VDA_1912_CU4\Workstation\'
+    #     DetectionFilePath: 'C:\Program Files\Citrix\Virtual Desktop Agent\BrokerAgent.exe'
+
+    - name: fineprint_PDF-Factory-Pro_4.81; AppId - 1179
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'pdfFactory Pro'
+        Ensure: 'Present'
+        Executable: 'Install.cmd'
+        Source: '{{ CoreApp_Source }}\Fineprint\PDF_Factory_Pro\4.81\'
+        #DetectionProductRegistryKeys: 'HKLM:\SOFTWARE\DXC\Packages\5859_FinePrintSoftware_pdfFactory_7.34_XEN_R1'
+        DetectionFilePath:
+          - "C:\Programme\Allianz\\PDF-Factory\\fpp450-dt.chm"
+          - "C:\Programme\Allianz\\PDF-Factory\\fpp450en.chm"
+
+    - name: IBMi Access Client ODBC 1.1.8.1 Drivers Only - APAC; AppId - 7732
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'IBMi Access Client ODBC 1.1.8.1'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\AGCS\IBMiAccessClientSolutions\'
+        DetectionProductUnistallRegKeyValue: '{E32ABB01-6901-4060-A9BA-D58CC24ABD1A}'
+
+    # - name: ODBC_Driver_for_SQL_server_v2012; AppId - 8279;
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'ODBC_Driver_for_SQL_server_v2012'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.bat'
+    #     Source: '\\aalmpssgp201\sources\Packages\DXC APAC\Microsoft\8279_ODBC_Driver_for_SQL_Server-v2012\13\'
+    #     DetectionProductUnistallRegKeyValue: '{2D98CD18-5754-4D94-B7E8-E6E11DAA56B1}'
+
+    - name: 505_AGCSKR_KoreanFonts_1.0_R1; AppId - 505
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'KoreanFonts_1.0_R1'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\AGCS\505_AGCSKR_KoreanFonts_1.0_R1\'
+        DetectionProductUnistallRegKeyValue: '{B05E117E-6143-4935-A8C9-7612B975B8A8}'
+
+    # - name: 486_AGCSKR_Hangul12020_11.0.0.1_R2; AppId - 486
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'Hangul12020_11.0.0.1_R2'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '\\aalmpssgp201\sources\Packages\AGCS\486_AGCSKR_Hangul12020_11.0.0.1_R2\'
+    #     DetectionProductUnistallRegKeyValue: '{F74FE1CA-CA34-4B75-95E9-00FA0F85B8F6}'
+
+    # - name: Oracle_12C_Admin_Client_32-bit-12.1.0.2_R1; AppId - 5199
+    #   win_dsc: 
+    #     resource_name: InstallerClass
+    #     PackageName: 'Oracle_12C_Admin_Client_32-bit-12.1.0.2_R1'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '{{ CoreApp_Source }}\Oracle\12C_Admin_Client_32_bit\12.1.0.2_R1\'
+    #     DetectionFilePath: 'C:\Oracle\32bit\product\12.1.0.2\client_12c\BIN\orabase.exe'
+    #     TimeOut: 600
+    #   ignore_errors: true
+
+    # - name: Oracle_12C_Admin_Client_64-bit-12.1.0.2_R1; AppId - 4359
+    #   win_dsc: 
+    #     resource_name: InstallerClass
+    #     PackageName: 'Oracle_12C_Admin_Client_x64'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.bat'
+    #     Source: '{{ CoreApp_Source }}\Oracle\12C_Admin_Client_64_bit\12.1.0.2\'
+    #     DetectionFilePath: 'C:\oracle\64bit\product\12.1.0.2\client_12c\BIN\orabase.exe'
+    #     TimeOut: 600
+    #   ignore_errors: true
+
+    
+
+
+
+
+
+
+
+
+
+          
+
+
+
         
