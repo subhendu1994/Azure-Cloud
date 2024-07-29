@@ -9,3 +9,42 @@
       add_host:
         groups: VDI_STD_Master_Local
         name: "{{ HostNameFact }}"  
+
+- name: VDI AGCS
+  hosts: VDI_STD_Master_Local
+  vars:
+    ansible_connection: winrm
+    ansible_port: 5985
+    ansible_winrm_read_timeout_sec: 900
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: credssp
+    reboot_timeout: 1800
+    CoreApp_Source: \\AALWSUSGP201.wwg00m.rootdom.net\packages
+  
+  gather_facts: false
+  tasks: 
+    
+    - name: Wait for Winrm 
+      wait_for_connection:
+        delay: 10
+        timeout: 3000
+
+    - name: Install SSCM Agent; AppId - 
+      win_dsc: 
+        resource_name: Package
+        Ensure: 'Present'
+        path: '\\aalmpssgp201\sources\Packages\DXC\SCCM Agent\5.00.9096.1024\ccmsetup.exe'
+        Name: 'Configuration Manager Client'
+        ProductId: '{9EE3DE97-08FA-4134-837A-F1FACC7BEFDD}'  # version 5.00.9096.1024
+        Arguments: '/mp:AALMPSSGP201.wwg00m.rootdom.net SMSMP=AALMPSSGP201.wwg00m.rootdom.net SMSSITECODE=AP1'
+      ignore_errors: true
+      # register: SCCMInstalled
+
+    - pause: 
+        minutes: 15
+
+    - name: RunMachine policy retrival and Application Deployment Cycle ; AppId -       
+      win_shell: ([wmiClasss] "root\ccm:SMS_Client").TriggerSchedule('{00000000-0000-0000-0000-000000000021}') # Machine policy retrival $ evaluation cycle 
+      ignore_erros: true
+
+############################################## System Locale #########################################      
