@@ -322,6 +322,75 @@
     #     Source: '{{ CoreApp_Source }}\Vmware\EnhancedAuthenticationPlugin\6.5\'
     #     DetectionProductUnistallRegKeyValue: '{B0D47CF7-68F6-43DF-8707-BB5066815764}'
 
+    # - name:  VMWare_Client_Integration_Plug-in_5.6.0; AppId - 4846
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'VMWare_Client_Integration_Plug-in_5.6.0'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '{{ CoreApp_Source }}\VMWare\VMWare_Client_Integration_Plugin\5.6.0\'
+    #     DetectionProductUnistallRegKeyValue: '{69206691-83F3-4805-902C-2F4C5B991810}'
+
+    - name:  Condeco_Admin_6.3.2; AppId - 4271
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Condeco_Addin_6.3.2'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '{{ CoreApp_Source }}\Condeco\Condeco_Addin\6.3.2\' 
+        DetectionProductUnistallRegKeyValue: '{3AEF5E48-4893-4F3B-B22F-55159785BE92}'
+
+    # - name:  ODBC_Driver_for_SQL_server_v2012; AppId - 4324
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'Microsoft_ODBC_Driver_for_SQL_server_v2012_13'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.bat'
+    #     Source: '{{ CoreApp_Source }}\Microsoft\ODBC_Driver_for_SQL_Server-v2012\13\'
+    #     DetectionProductUnistallRegKeyValue: '{2D98CD18-5754-4D94-B7E8-E6E11DAA56B1}'
+
+    - name:  IBMDB2RuntimeClient_11.1.4041_PKG_R1; AppId - 4610
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'IBMDB2RuntimeClient_11.1.4041_PKG_R1'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\IBM\DB2_Runtime_Client\11.1\'
+        DetectionProductUnistallRegKeyValue: '{36DAE68E-6D8E-479C-BE52-D1D8E2A81E64}'
+
+    # - name: SAP_Walldorf_SAPGUI_Active_Component_Framework_PL_62; AppId - 5557
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'SAP_Walldorf_SAPGUI_Active_Component_Framework_PL_62'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '{{ CoreApp_Source }}\SAP_Walldorf\SAPGUI_Active_Component_Framework\PL_62\'
+    #     DetectionProductRegistryKeys: 'HKLM:\SOTWARE\WOW6432Node\CSC\Packages\5557_SAP_SAPACFPL_62_PKG_R1'
+
+    - name:  1 out of 2, Copy 10671_SAP_GUIFORVDI_770SP7_PKG_R1; AppId - WAPP0011022
+      win_dsc: 
+        resource_name: File
+        Ensure: 'Present'
+        Type: 'Directory' 
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\SAP\10671_SAP_GUIFORVDI_770SP7_PKG_R1\Package\10671_SAP_GUIFORVDI_770SP7_PKG_R1'
+        DestinationPath: 'C:\Packages\10671_SAP_GUIFORVDI_770SP7_PKG_R1'
+        Force: true
+        MatchSource: true
+
+    - name: 2 out of 2, 10671_SAP_GUIFORVDI_770SP7_PKG_R1; AppId - WAPP0011022
+      win_shell: ."C:\Packages\10671_SAP_GUIFORVDI_770SP7_PKG_R1\Deploy-Application.ps1"
+      register: SAPReboot
+
+      
+
+
+
+
+
+
+
 
 
 
