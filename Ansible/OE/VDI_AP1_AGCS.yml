@@ -164,6 +164,112 @@
     #     TimeOut: 600
     #   ignore_errors: true
 
+    - name: Create_Oracle_Folder
+      win_dsc: 
+        resource_name: File
+        Type: 'Directory'
+        DestinationPath: 'C:\oracle'
+        Ensure: 'Present'
+
+    - name:  Oracle_Permission
+      win_acl:
+        path: 'C:\oracle'
+        user: 'Authenticated Users'
+        rights: Read,Write
+        type: allow
+        state: present 
+        inherit: ContainerInherit, ObjectInherit
+        propagaton: 'None'
+
+    - name: remove_oracle_home
+      win_dsc:
+        resource_name: Environment
+        Ensure: 'Absent'
+        Name: 'Oracle_home'
+
+    # - name: Oracle_Instant_Client_19.3x64; AppId - 4705
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'Oracle_Instant_Client_19.3x64_4705'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.cmd'
+    #     Source: '{{ CoreApp_Source }}\Oracle\Instant_Client_19.3_x64\'
+    #     DetectionProductionUninstallRegKeyValue: '{65222AB8-5566-4717-B46D-817C9BDB34D3}'
+
+    # - name: Installer_Go_To_assit; AppId - 3651
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'Citrix_Goto_Assit_Customer_11_9_0_1280_3651'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '{{ CoreApp_Source }}\Citrix\Goto_Assit_Customer\11.9.0.1280_3651\'
+    #     DetectionProductRegistryKeys: 'HKLM:SOFTWARE\Wow6432Node\CSC\Packages\3651_Citrix_CitrixGoToAssitCorporate_11.9_PKG_R1'
+    #     DetectionProductUninstallRegistryKeys: '{95237e14-3f0a-410b-9378-b3303003fc6c}'
+
+    - name: Install_Printer_Drivers; AppId - App_Printer_Drivers
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Printer_drivers'
+        Ensure: 'Present'
+        Executable: 'Install.cmd'
+        Source: '\\aalmpssgp201\sources\Packages\Print_Drivers\all_os\Printer Driver Installation 2.0\'
+        DetectionFilePath: 'C:\Windows\Installer\printers_add.log'
+
+    - name: KonicaMinolta_FaxDriver_5.4.0.0; AppId - 
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'KonicaMinolta_FaxDriver_5.4.0.0'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\AGCS\OS and INFRA\KonicaMinolta_FaxDriver_5.4.0.0\'
+
+    - name:  Install_TortoiseSVN_Tortoise_1.13.2; AppId - 5049
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'TortoiseSVN_Tortoise_1.13.2'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\TortoiseGit\5049_TortoiseSVN_1.13.2_R1\'
+        DetectionProductUnistallRegKeyValue: '{F7080EF1-BD21-483B-ACAE-E19FAA2DF458}'
+
+    - name:  Install_MS_VSTOR_2010; AppId - 3694
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'MS_VSTOR2010_10.0.60724x64'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '{{ CoreApp_Source }}\Microsoft\Visual_Studio_2010_Tools_for_Office_Runtime\10.0.60724_x64\' 
+        DetectionProductRegistryKeys: 'HKLM:\SOFTWARE\Microsoft\Visual_Studio_2010_Tools_for_Office_Runtime\10.0.60724_x64'
+
+    - name:  HP Appl Lifecycle MGMT; AppId - 3694
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'HP_(3479)_Application_Lifecycle_Management\12.55\' 
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '{{ CoreApp_Source }}\HP\(3479)_Application_Lifecycle_Management\12.55\'
+        DetectionProductUnistallRegKeyValue: '{B030EFD4-65C7-47AC-B8A0-726613AEB460}'
+
+    - name:  Reboot Action for VS2010 Shell Package [SHELL]
+      win_reboot: 
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+
+    - name:  Microsoft_Visual_Studio_2010_Shell_2010_SP1; AppId - 1748
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Microsoft_Visual_Studio_2010_Shell_2010_SP1'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '{{ CoreApp_Source }}\Microsoft\Visual_Studio_2010_Shell\2010_SP1\'
+        DetectionProductUnistallRegKeyValue: '{D64B6984-242F-32BC-B008-752806E5FC44}'
+
+        
+          
+
+
+      
+
     
 
 
