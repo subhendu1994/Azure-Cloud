@@ -264,7 +264,71 @@
         Source: '{{ CoreApp_Source }}\Microsoft\Visual_Studio_2010_Shell\2010_SP1\'
         DetectionProductUnistallRegKeyValue: '{D64B6984-242F-32BC-B008-752806E5FC44}'
 
-        
+    - name:  Avencis_SSOX_9.0.0.5; AppId - 4444
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Avencis_SSOX_9.0.0.5'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '{{ CoreApp_Source }}\Avencis\SSOX\9.0.0.5\'
+        DetectionProductUnistallRegKeyValue: '{05762A02-E6C4-4055-9776-2077C46B1DC4}'
+
+    - name:  Cryptovision_RCSP_2.0.4.2 5524
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '{{ CoreApp_Source }}\Cryptovision\RCSP\2.0.4.2-x64.msi'
+        Name: 'cv act sc/interface remote'
+        ProductId: '{788A74FD-CEA0-4CDD-8219-BB81585DA678}'
+        Arguments: 'TRANSFOMRS="{{ CoreApp_Source }}\Cryptovision\RCSP\2.0.4.2\CVCryptovision_RCSP_2.0.4_R1.mst" /qn /l*v "c:\windows\Installer\5524_CVCryptovision_RCSP_2.0.4_PKG_R1_Install.log"'
+
+    - name:  HP_PRACS_1.0; AppId - App_HP_PRACS
+      win_dsc:
+        DetectionFilePath:
+          - "C:\\Program Files\\HP\\vscertdel\\vscertdel.cab"
+          - "C:\\Program Files\\HP\\vscertdel\\vscertdel.dll"
+          - "C:\\Program Files\\HP\\vscertdel\\vscertdel.inf"
+        Ensure: Present
+        Executable: Install.cmd  
+        PackageName: HP_PRACS_1.0
+        Source: '{{ CoreApp_Source }}\HP\PRACS\1.0\'
+        resource_name: InstallerClass
+
+    - name:  IM CardSanAgent; AppId - 
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Oracle_Instant_Client_19.3x64_4705'
+        Ensure: 'Present'
+        Executable: 'Install.cmd'
+        Source: '\\aalmpssgp201\sources\Packages\AGCS\OS and INFRA\b_files\Card Scan\'
+        DetectionProductUnistallRegKeyValue: '{8A3E7E93-7749-4D37-8957-75BEB9A47ECC}'
+
+    # To do something is fishy with registry detection
+    - name:  AcroSoftware_CutePDF_Writer_3.2; AppId - 3868
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'AcroSoftware_CutePDF_Writer_3.2'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\AcroSoftware\AZ-ENG-CutePDFWriter-3.2\'
+        DetectionProductRegistryKeys: 'HKLM:\SOFTWARE\Wow6432Node\CSC\Packages\AZ-ENG-CutePDFWriter-3.2-AZUK-R1'
+
+    # - name:  Install_Vmware-Enhanced-Authe; AppId - 3211
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'Vmware_EnhancedAuthenticationPlugin_6.5'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '{{ CoreApp_Source }}\Vmware\EnhancedAuthenticationPlugin\6.5\'
+    #     DetectionProductUnistallRegKeyValue: '{B0D47CF7-68F6-43DF-8707-BB5066815764}'
+
+
+
+
+
+
+
+
           
 
 
