@@ -1,0 +1,139 @@
+---
+- name:  Enter teh Matrix to get hostname.
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: add host to local inventory
+      add_host: 
+        groups: VDI_STD_Master_Local
+        name: "{{ HostNameFact }}"
+
+- name: VDI AZID
+  hosts: VDI_STD_Master_Local
+  vars:
+    ansible_connection: winrm
+    ansible_port: 5985
+    ansible_winrm_read_timeout_sec: 900
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: credssp
+    reboot_timeout: 1800
+    CoreApp_Source: \\AALWSUSGP201.wwg00m.rootdom.net\packages
+
+  gather_facts: false
+  tasks:
+
+    - name: Wait for WinRM 
+      wait_for_connection:
+        delay: 10
+        timeout: 3000
+
+################################################### APPS ########################################################
+
+    - name: 1 out of 2, MS Visual Studio Express 2017; AppID - 8297
+      win_dsc:
+        resource_name: File
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\Microsoft\7934_MS_VsExp_2017_PKG_R1'
+        DestinationPath: 'C:\temp\VsExp_2017' 
+        Force: true
+        MatchSource: true
+
+    - name: 2 out of 2, MS Visual Studio Express 2017; AppID - 8297
+      win_shell: ."C:\temp\VsExp_2017\Install.vbs"
+
+    - name: Princeton_PublisherClients_4.9.1_PKG_R1; AppID - 7399
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: '7399_Princeton_PublisherClients_4.9.1_PKG_R1'
+        DetectionProductUninstallRegKeyValue: '{59AEB0C9-E851-45D9-8DBD-61E6FA33CD93}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\DXC APAC\Princeton\7399_Princeton_PublisherClients_4.9.1_PKG_R1\7399_Princeton_PublisherClients_4.9.1_PKG_R1\' 
+
+    # - name: APAC_OAOReport_20070_R1; AppID - 7905
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: '7905_APAC_OAOReport_20070_PKG_R1'
+    #     DetectionProductUninstallRegKeyValue: '{3115BB03-D1C2-4B7F-A01D-DA135100F907}'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '\\aalmpssgp201\sources\Packages\APAC\7905_APAC_OAOReport_20070_PKG_R1\Package\'
+
+    - name: Princeton_PublisherClients_4.9.1_PKG_R1; AppID - 7399
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'CPublisherClients'
+        DetectionProductUninstallRegKeyValue: '{59AEB0C9-E851-45D9-8DBD-61E6FA33CD93}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\PublisherClients\7399_Princeton_PublisherClients_4.9.1_PKG_R1\'
+
+    - name: AdoptOpenJDK_JRE_8u302_uninstall; AppID - 7541
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'AdoptOpenJDK_JRE_8u3002_Uninstall'
+        Ensure: 'Present'
+        Executable: 'uninstall.vbs'
+        Source: '{{ CoreApp_Source }}\AdoptOpenJDK\AdoptOpenJDK_JRE\8u302\' 
+
+    - name: 1 out of 2, Copy Oracle_JRE_8.0.321; AppID - 8279
+      win_dsc:
+        resource_name: File
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\Oracle\JRE\8.0.321'
+        DestinationPath: 'C:\Packages\JRE8u321'
+        Force: true
+        MatchSource: true
+
+    - name: 2 out of 2, Install Oracle_JRE_8.0.321; AppID - 8279
+      win_shell: ."C:\Packages\JRE8u321\Install_Ansible.ps1"
+      register: OracleJava
+
+    - name: JavaRuleset
+      win_shell: CScript.exe "\\Wwg00m.rootdom.net\apac\appsense\Files\JAVA_8\Add_DRS.vbs" "\\Wwg00m.rootdom.net\apac\ap2\appsense\Files\JAVA_8" >c:\temp\logs\addtrustedsitesjava.log
+
+    - name: Remove Open JDK shortcut defect 5415
+      win_file:
+        path: 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\AdoptOpenJDK'
+        state: absent 
+      ignore_errors: yes
+
+    - name: Reboot Action for Power Plan [REBOOT]
+      win_reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+
+
+################################################ Variables ################################################
+
+    - name: Get Naming facts - Azure
+      set_facts:
+        ImageNamePart1: "{{ Release_Type + Release_Increment + '_' + Year + '_' + Planned_Major_sequence + Release_Sequence_per_release }}"
+      when: MainVar is search("Azure")
+
+    - name: Make Naming facts
+      set_fact:
+        FinalImageName1: "{{ ImageNamePart1 + '_' + TypeOfImageFact + '_' + SAC_Release_Version + '_' + RegionFact + '_' + DataCenterFact + '_' + OE_SuffixFact }}"
+
+    - name: Combine Final naming 
+      set_fact: 
+        FinalImageName: "{{FinalImageName1 | replace('_','_') }}"
+
+    - name: Image build specific registry keys
+      win_dsc:
+        resource_name: Registry 
+        Ensure: 'Present'
+        Key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation'
+        ValueName: 'Manufacturer'
+        ValueType: "{{ FinalImageName }}"
+        Force: true
+        
+
