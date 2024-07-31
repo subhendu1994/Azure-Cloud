@@ -509,6 +509,131 @@
         Executable: 'Install.bat'
         Source: '\\aalmpssgp201\sources\Packages\IBM\i_Access_Client_ODBC_Drivers\1.1.8.1_(Build_8452)\'       
          
+    # - name:  Disable the Veridium Credential Provider in Winlogon UI in Master Image 
+    #   win_dsc:
+    #     resource_name: Registry 
+    #     Ensure: 'Present'
+    #     Key: 'HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System'
+    #     ValueName: 'ExcludedCredentialProviders'
+    #     ValueData: '{4780CEC-220E-478C-943F-EA43F07D10D3}'
+    #     Force: true
+
+    # - name: Veridium_Credential_Provider; AppId - 7818
+    #   win_dsc: 
+    #     resource_name: InstallerClass
+    #     Ensure: 'Present'
+    #     Executable: 'Install.bat'
+    #     Source: '{{ CoreApp_Source }}\VeridiumID\Credential_Provider\2.5.6.54\'
+    #     PackageName: 'Veridium Credential_Provider'
+    #     DetectionProductUnistallRegKeyValue: '{5B004294-7DB8-4117-9858-455BB041DA0D}'
+
+    - name:  Microsoft Visual C++ 2005 Redistributables Removal
+      win_package:
+        product_id: "{{ item }}"
+        state: absent
+      loop:
+        - '{7299052b-02a4-4627-81f2-1818da5d550d}'
+        - '{071c9b48-7c32-4621-a0ac-3f809523288f}'
+
+    - name: Oracle Instant Client 18.5 (32bit) - APAC; AppId - 8253
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Oracle Instant Client 18.5_32bit'
+        DetectionProductUnistallRegKeyValue: '{1057E9DD-5910-4714-96EC-A8DBD04F18A}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '{{ CoreApp_Source }}\Oracle\Instan_Client\32bit_18.5\' 
+
+    - name:  Oracle Instant Client 18.5 (64bit) - APAC; AppId - 8252
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Oracle Instant Client 18.5_64bit'
+        DetectionProductUnistallRegKeyValue: '{DF277548-5115-4AA4-8AE8-7C2EE1A00BC7}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '{{ CoreApp_Source }}\Oracle\Instant_Client\18.5_64bit\'        
+
+    - name: Cofence_Reporter_For_Outlook_5.0.3; AppId - 7243
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Cofence_Reporter_For_Outlook_5.0.3'
+        DetectionProductUnistallRegKeyValue: '{4659E52B-AAEF-47C4-8A36-374B9A356F1A}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\DXC APAC\Cofense\7241_Cofence_CofenseReporter_5.0.3_PKG_R1\Package\7241_Cofence_CofenseReporter_5.0.3_PKG_R1\' 
+
+    - name: 1 out of 2, Copy 10671_SAP_GUIFORVDI_770SP7_PKG_R1; AppId - WAPP0011022
+      win_dsc:
+        resource_name: File 
+        Ensure: 'Present'
+        Type: 'Directory' 
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\SAP\10671_SAP_GUIFORVDI_770SP7_PKG_R1\Package\10671_SAP_GUIFORVDI_770SP7_PKG_R1'
+        DestinationPath: 'C:\Packages\10671_SAP_GUIFORVDI_770SP7_PKG_R1'
+        Force: true
+        MatchSource: true 
+
+    - name: 2 out 0f 2, 10671_SAP_GUIFORVDI_770SP7_PKG_R1; AppId - WAPP0011022
+      win_shell: ."C:\Packages\10671_SAP_GUIFORVDI_770SP7_PKG_R1\Deploy-Application.ps1"
+
+
+    - name:  1 out of 2, Copy 8951_Digiarty_VideoProConverter_4.7_PKG_R2; AppId - 8951 - AGCS-JP Only
+      win_dsc:
+        resource_name: File 
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\Digiarty\8951_VideoProConverter_4.7_PKG_R2'
+        DestinationPath: 'C:\Packages\8951_Digiarty_VideoProConverter_4.7_PKG_R2'
+        Force: true
+        MatchSource: true
+
+    - name:  2 out of 2, 8951_Digiarty_VideoProConverter_4.7_PKG_R2; AppId - 8951
+      win_shell: ."C:\Packages\8951_Digiarty_VideoProConverter_4.7_PKG_R2\Deploy-Application.ps1"
+      when: OE == "AGCSJP"
+
+    - name:  11734_Avaya One-X Communicator_6.1; AppId - WAPP0013061
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: '11734_Avaya One-X Communicator_6.1'
+        Ensure: 'Present'
+        Executable: 'Deploy-Application.exe'
+        Source: '\\aalmpssgp201\sources\Packages\DXC\APAC\11734_Avaya_AvayaOneXCommunicator_6.1.113_PKG_R1\'
+        DetectionProductRegistryKeys: 'HKLM:\SOFTWARE\WOW6432Node\DXC\Packages\11734_Avaya_AvayaOneXCommunicator_6.1.113_PKG_R1'
+
+
+########################################## APPS #######################################################
+
+    - name:  Get Naming Facts - Azure 
+      set_fact:
+        ImageNamePart1: "{{ Realease_Type + Release_Increment + '-' + Year + '_' + Planned_Major_sequence + Release_Sequence_per_release }}"
+      when: MainVar is search("Azure")
+
+    - name: Make Naming facts 
+      set_fact: 
+        FinalImageName1: "{{ ImageNamePart1 + '_' + typeOfImageFact + '_' + SAC_Release_Version + '_' + RegionFact + '_' + DataCenterFact + '_' + OE_SuffixFact }}"
+
+    # - name:  Make Naming facts
+    #   set_fact:
+    #     FinalImageName1: "{{ ImageNamePart1 + '_' + typeOfImageFact + '_' + SAC_Release_Version + '_' + RegionFact + '_' + DataCenterFact + '_' + OE_SuffixFact }}"        
+
+    - name:  Combine Final naming 
+      set_fact:
+        FinalImageName: "{{FinalImageName | replace('_','_')}}"
+
+    - name:  Image build specific registry keys 
+      win_dsc:
+        resource_name: Registry 
+        Ensure: 'Present'
+        Key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation'
+        ValueName: 'Manufacturer'
+        ValueData: "{{ FinalImageName }}"
+        Force: true
+
+
+
 
           
 
