@@ -383,7 +383,134 @@
       win_shell: ."C:\Packages\10671_SAP_GUIFORVDI_770SP7_PKG_R1\Deploy-Application.ps1"
       register: SAPReboot
 
-      
+    - name:  Reboot Action for SAP Packages [SHELL]
+      win_reboot: 
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+      when: SAPReboot.changed
+
+    - name:  Wait for WinRM 
+      wait_for_connection:
+        delay: 10
+        timeout: 3000
+
+    - name:  1 out of 2, Copy WAPP001988_VIPRE_Safesend_5.1.3.8_PKG_R1; AppId - WAPP0002053
+      win_dsc:
+        resource_name: File 
+        Ensure: 'Present'
+        Type: 'Directory' 
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\Vipre\WAPP0001988_VIPRE_Safesend_5.1.3.8_PKG_R1\Package\WAPP0001988_VIPRE_Safesend_5.1.3.8_PKG_R1'
+        DestinationPath: 'C:\Packages\WAPP0001988_VIPRE_Safesend_5.1.3.8_PKG_R1'
+        Force: true
+        MatchSource: true
+
+    - name:  2 out of 2, WAPP001988_VIPRE_Safesend_5.1.3.8_PKG_R1; AppId - WAPP0002053
+      win_shell: ."C:\Packages\WAPP0001988_VIPRE_Safesend_5.1.3.8_PKG_R1\Deploy-Application.ps1"
+
+    - name:  AGREX_1.0_R3; AppId - 488 PR013
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'AGREX_1.0_R3'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\AGCS\AGREX\488_AGCSJP_AGREX_1.0_R3\'
+        DetectionProductUnistallRegKeyValue: '{92DBDBE0-2F5F-482B-B930-500BF2852D2F}'
+
+    - name:  Hp_LaserJet_2800_drivers; AppId - 4492
+      win_dsc:
+        resource_name: 'HP_LaserJet_2800_PS_x64_driver_6.1.8600.16385'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '{{ CoreApp_Source }}\HP\HP_LaserJetPSdriver_6.1.7600.16385\' 
+        DetectionProductUnistallRegKeyValue: '{B1005887-CACC-4314-9359-7BC75EF248BA}'
+
+    - name:  ODBC AMA Druckportal; AppId - 858
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\IBM\ODBC_Connections\AMA_Druckportal\7.1\IBM_AMADruckportalODBC_7.1_R1.msi'
+        Name: 'IBM AMA Druckportal ODBC' 
+        ProductId: '9641F49E-3134-4337-B036-F260B0A4F645'
+        Arguments: '/l*v c:\windows\Installer\ODBC_AMA_Druckportal.log'
+
+    - name:  AGCS_GBIM_Reporting_2.0; AppId - 2915
+      win_dsc: 
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\AGCS\ODBC_Connections\GBIM_Reporting\2.0\2915_AGCS_ODBCGBIMreporting_2.0_PKG_R1.msi'
+        Name: '2915_AGCS_ODBCGBIMreporting_2.0_PKG_R1'
+        ProductId: 'EDB3B4B2-A678-48BD-9F7E-A47FA5AE9A12'
+        Arguments: '/l*v c:\windows\Installer\2915_AGCS_ODBCGBIMreporting_2.0_PKG_R1_install.log'
+      register: ODBCConnectionsOBT
+
+    - name:  Reboot Action for ODBCConnectionsOBT [REBOOT]
+      win_reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+      when: ODBCConnectionsOBT.changed
+
+    - name:  AGCS_ODBCConectionsOBT_2.0; AppId - 2908
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\AGCS\ODBC_Connections\Global_OBT\2.0\2908_AGCS_ODBCConectionsOBT_2.0_PKG_R1.msi'
+        Name: '2908_AGCS_ODBCConnectionsOBT_2.0_PKG_R1'
+        ProductId: '3D0818B8-28AC-44C4-B021-5FA80A9DABFB'
+        Arguments: '/l*v c:\windows\Installer\2908_AGCS_ODBCConnectionsOBT_install.log'
+
+    - name:  AGCS_AS400_BUCHB_ODBC_Conncetions_1.00; AppId - 1035
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\AGCS\ODBC_Connections\AS400_BUCHB\1.00\AGCS_AS400BUCHB_1.0_R1.msi'
+        Name: 'AGCS_AS400 BUCHB'
+        ProductId: '9225BBB3-2D89-4FF3-A59E-ADEE27521D1D'
+        Arguments: '/l*v c:\windows\Installer\AGCS_AS400_BUCHB_ODBC_Connections_1.00_install.log'
+
+    - name:  AGCS_UNION_ODBC_Connections_1.0; AppId - 886
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\AGCS\ODBC_Connections\Union\1.0\AGCS_UNIONOBCDS_1.0_PKG_R1.msi'
+        Name: 'UNION'
+        ProductId: 'F45357C6-6AAE-42EE-9B27-845855C711C6'
+        Arguments: '/l*v c:\windows\Installer\AGCS_UNION_ODBC_Connections_1.0_install.log'
+
+    - name:  AGCS_CORES_ODBC_Connections_1.0; AppId - 885
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\AGCS\ODBC_Connections\Cores\1.0\AGCS_CORESODBCDS_1.0_PKG_R1.msi'
+        Name: 'CORES' 
+        ProductId: '10DC6D90-363F-4489-A0CB-FF24AE8136DC'
+        Arguments: '/l*v c:\windows\Installer\AGCS_UNION_ODBC_Connections_1.0_install.log'
+
+    - name:  IBM_iAccess_Client_Solutions_Version_1.1.8.1_(Build_8452); AppId - 4325
+      win_dsc:
+        resource_name: Package
+        Ensure: 'Present'
+        Path: '\\aalmpssgp201\sources\Packages\IBM\iAccess_Client_Solution\Version_1.1.8.1_(Build_8452)\Source\AZ-MLT-IBMIAccessClientSolutions-1.1.8.1-AGUS-R1.msi'
+        ProductId: 'F98BA812-2FAF-4B34-ADD8-B4952D056587'
+        Arguments: '/l*v c:\windows\Installer\IBM_iAccess_Client_Solutions_Version_1.1.8.1_Build_8452_install.log'
+
+    - name:  Reboot Action for IBM_i_Access_Client_ODBC_Drivers [REBOOT]
+      win_reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+
+    - name:  IBM_i_Access_Client_ODBC_Drivers_1.1.8.1_(Build_8452); AppId - 
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'IBM_i_Access_Client_ODBC_Drivers_1.1.8.1_Build_8452' 
+        DetectionProductUnistallRegKeyValue: '{027E9801-FAB4-4EF1-BB88-27B0520B6314}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\IBM\i_Access_Client_ODBC_Drivers\1.1.8.1_(Build_8452)\'       
+         
+
+          
 
 
 
