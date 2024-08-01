@@ -1,5 +1,5 @@
 ---
-- name:  Enter teh Matrix to get hostname.
+- name:  Enter the Matrix to get hostname.
   hosts: localhost
   connection: local
   gather_facts: true

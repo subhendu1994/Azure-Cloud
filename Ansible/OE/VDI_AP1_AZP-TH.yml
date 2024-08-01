@@ -1,0 +1,108 @@
+---
+- name:  Enter the matrix to get hostname
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: add host to local inventory
+      add_host: 
+        groups: VDI_STD_Master_Local
+        name: "{{ HostNameFact }}"
+
+- name: VDI AZP-TH
+  hosts: VDI_STD_Master_Local
+  vars:
+    ansible_connection: winrm
+    ansible_port: 5985
+    ansible_winrm_read_timeout_sec: 900
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: credssp
+    reboot_timeout: 1800
+    CoreApp_Source: \\AALWSUSGP201.wwg00m.rootdom.net\packages
+
+  gather_facts: false
+  tasks:
+
+    - name: Wait for WinRM 
+      wait_for_connection:
+        delay: 10
+        timeout: 3000       
+
+####################################### Locale ########################################
+
+    - name:  Set Syaytem Local
+      win_dsc:
+        resource_name: SystemLocale
+        SystemLocale: 'th-TH'
+        IsSingleInstance: 'Yes'
+      register: SystemLocaleSet
+
+    - name:  Reboot Action for Power Plan [REBOOT]
+      win_reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+      when: SystemLocaleSet.changed
+
+####################################### APPS #################################################
+
+    - name: 7435_APAC_ThailandLanguageFonts_1.0_PKG_R1; AppID - 7435
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'APAC_ThailandLanguageFonts_1.0_PKG_R1'
+        DetectionProductUninstallRegKeyValue: '{BE065A8A-6280-4AD3-BD63-874CDCE5C18E}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\APAC\7435_APAC_ThailandLanguageFonts_1.0_PKG_R1\Packages\7435_APAC_ThailandLanguageFonts_1.0_PKG_R1\'
+
+
+    - name: APAC_ThailandLanguageFonts_1.0_PKG_R1; AppID - 7435
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'ThailandLanguageFonts'
+        DetectionProductUninstallRegKeyValue: '{BE065A8A-6280-4AD3-BD63-874CDCE5C18E}'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\APAC\7435_APAC_ThailandLanguageFonts_1.0_PKG_R1\Packages\7435_APAC_ThailandLanguageFonts_1.0_PKG_R1\'
+
+##### TO BE SOLVED
+
+    - name: Prosoft_WINSpeed_10.0_PKG_R1; AppID - 7941
+      win_dsc:
+        resource_name: InstallerClass
+        PackageName: 'Winspeed'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\Prosoft\7941_Prosoft_WINSpeed_10.0_PKG_R1'
+        # DetectionProductRegistryKeys: 'HKLM:\SOFTWARE\DXC\Packages\7941_Prosoft_WINSpeed_10.0_PKG_R1'
+        # DetectionFilePath: 'C:\Program Files (x86)\Prosoft\WINSpeed\Uninstall.log'
+        # DetectionFilePath: 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\WINSpeed 10.0\Query.lnk'
+      ignore_errors: true
+
+####################################### Variables ###########################################################################
+
+    - name:  Get Naming facts - Azure
+      set_facts: 
+        ImageNamePart1: "{{ Release_Type + Release_Increment + '_' + Year + '_' + Planned_Major_Sequence + Release_Sequence_per_release }}"
+      when: MainVar is search("Azure")
+
+    - name:  Make Naming facts 
+      set_facts: 
+        FinalImageName1: "{{ ImageNamePart1 + '_' + TypeOfImageFact + '_' + SAC_Release_Version + '_' + RegionFact + '_' + DataCenterFact + '_' + OE_SuffixFact }}"
+
+    - name:  Combine Finame Naming
+      set_fact: 
+        FinalImageName: "{{FinalImageName1 | replace('__','_') }}"
+
+    - name:  Image build specific registry keys 
+      win_dsc: 
+        resource_name: Registry 
+        Ensure: 'Present'
+        Key: 'HKLM_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation'
+        ValueName: 'Manufacturer'
+        ValueData: "{{ FinalImageName }}"
+        ValueType: 'String'
+        Force: true
+                
+        
+
