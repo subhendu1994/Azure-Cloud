@@ -49,3 +49,111 @@
 
 ################################################################## APPS #########################################################
 
+    - name: 1 out of 2, MS Visual Studio Express 2017; AppID - 8297
+      win_dsc:
+        resource_name: File
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\Microsoft\7934_MS_VsExp_2017_PKG_R1'
+        DestinationPath: 'C:\temp\VsExp_2017' 
+        Force: true
+        MatchSource: true
+
+    - name: 2 out of 2, MS Visual Studio Express 2017; AppID - 8297
+      win_shell: ."C:\temp\VsExp_2017\Install.vbs"
+
+    - name: 1 out of 2, Copy Adoptium JDK_JRE; AppID - WAPP0010957
+      win_dsc:
+        resource_name: File
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\AALWSUSGP201.wwg00m.rootdom.net\Allianz_packages\Eclipse Temurin\Adoptium JDK_JRE\8.0.345.1'
+        DestinationPath: 'C:\Packages\8.0.345.1' 
+        Force: true
+        MatchSource: true
+
+    - name: 2 out of 2, MS Visual Studio Express 2017; AppID - 8297
+      win_shell: ."C:\Packages\8.0.345.1\Deploy-Application.ps1" 
+
+    - name:  1 out of 2, Copy 8951_Digiarty_VideoProConverter_4.7_PKG_R2; AppId - 8951
+      win_dsc:
+        resource_name: File 
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\Digiarty\8951_VideoProConverter_4.7_PKG_R2'
+        DestinationPath: 'C:\Packages\8951_Digiarty_VideoProConverter_4.7_PKG_R2'
+        Force: true
+        MatchSource: true
+
+    - name:  2 out of 2, 8951_Digiarty_VideoProConverter_4.7_PKG_R2; AppId - 8951
+      win_shell: ."C:\Packages\8951_Digiarty_VideoProConverter_4.7_PKG_R2\Deploy-Application.ps1"
+      
+
+    - name:  1 out of 2, Copy 9203_CombinedFonts_1.0_PKG_R1; AppId - 9203
+      win_dsc:
+        resource_name: File 
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\BentleyFiatVolvoVW\9203_CombinedFonts_1.0_PKG_R1'
+        DestinationPath: 'C:\Packages\9203_CombinedFonts_1.0_PKG_R1'
+        Force: true
+        MatchSource: true
+
+    - name:  2 out of 2, 9203_CombinedFonts_1.0_PKG_R1; AppId - 9203
+      win_shell: ."C:\Packages\9203_CombinedFonts_1.0_PKG_R1\Deploy-Application.ps1"
+      
+    - name: Reboot Action for Power Plan [REBOOT]
+      win_reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+
+    - name:  1 out of 2, Copy 9074_APJapan_ExceladdinZipcodeConverter_1.0_PKG_R3; AppId - 9074
+      win_dsc:
+        resource_name: File 
+        Ensure: 'Present'
+        Type: 'Directory'
+        CheckSum: 'SHA-256'
+        Recurse: true
+        SourcePath: '\\aalmpssgp201\sources\Packages\DXC APAC\9074_APJapan_ExceladdinZipcodeConverter_1.0_PKG_R3\Package\9074_APJapan_ExceladdinZipcodeConverter_1.0_PKG_R3'
+        DestinationPath: 'C:\Packages\9074_APJapan_ExceladdinZipcodeConverter_1.0_PKG_R3'
+        Force: true
+        MatchSource: true
+
+    - name:  2 out of 2, 9074_APJapan_ExceladdinZipcodeConverter_1.0_PKG_R3; AppId - 9074
+      win_shell: ."C:\Packages\9074_APJapan_ExceladdinZipcodeConverter_1.0_PKG_R3\Deploy-Application.ps1"    
+
+    - name: Reboot Action for Power Plan [REBOOT]
+      win_reboot:
+        post_reboot_delay: 120
+
+################################################## Variables ##########################################################################
+
+    - name: Get Naming facts - Azure
+      set_facts:
+        ImageNamePart1: "{{ Release_Type + Release_Increment + '_' + Year + '_' + Planned_Major_sequence + Release_Sequence_per_release }}"
+      when: MainVar is search("Azure")
+
+    - name: Make Naming facts
+      set_fact:
+        FinalImageName1: "{{ ImageNamePart1 + '_' + TypeOfImageFact + '_' + SAC_Release_Version + '_' + RegionFact + '_' + DataCenterFact + '_' + OE_SuffixFact }}"
+
+    - name: Combine Final naming 
+      set_fact: 
+        FinalImageName: "{{FinalImageName1 | replace('__','_') }}"
+
+    - name: Image build specific registry keys
+      win_dsc:
+        resource_name: Registry 
+        Ensure: 'Present'
+        Key: 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation'
+        ValueName: 'Manufacturer'
+        ValueType: "{{ FinalImageName }}"
+        Force: true

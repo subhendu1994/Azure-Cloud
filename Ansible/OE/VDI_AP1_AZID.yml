@@ -125,7 +125,7 @@
 
     - name: Combine Final naming 
       set_fact: 
-        FinalImageName: "{{FinalImageName1 | replace('_','_') }}"
+        FinalImageName: "{{FinalImageName1 | replace('__','_') }}"
 
     - name: Image build specific registry keys
       win_dsc:
