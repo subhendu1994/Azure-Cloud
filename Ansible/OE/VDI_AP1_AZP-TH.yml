@@ -31,7 +31,7 @@
 
 ####################################### Locale ########################################
 
-    - name:  Set Syaytem Local
+    - name:  Set System Local
       win_dsc:
         resource_name: SystemLocale
         SystemLocale: 'th-TH'
