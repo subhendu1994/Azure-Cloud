@@ -1,0 +1,234 @@
+---
+- name:  Enter the matrix to get hostname
+  hosts: localhost
+  connection: local
+  gather_facts: true
+
+  tasks:
+    - name: add host to local inventory
+      add_host: 
+        groups: VDI_STD_Master_Local
+        name: "{{ HostNameFact }}"
+
+- name: VDI AZP-TH
+  hosts: VDI_STD_Master_Local
+  vars:
+    ansible_connection: winrm
+    ansible_port: 5985
+    ansible_winrm_read_timeout_sec: 900
+    ansible_winrm_server_cert_validation: ignore
+    ansible_winrm_transport: credssp
+    reboot_timeout: 1800
+    CoreApp_Source: \\AALWSUSGP201.wwg00m.rootdom.net\packages
+    SCCM_Configuration: /mp:AALMPSSGP201.Wwg00m.rootdom.net SMSSITECODE=API SMSP=AALMPSSGP201.Wwg00m.rootdom.net
+
+  gather_facts: false
+  tasks:
+
+    - name: Wait for WinRM 
+      wait_for_connection:
+        delay: 10
+        timeout: 3000
+
+########################################################## Sytem Locale #######################################################
+
+    - name:  Set System Local for Australia
+      win_dsc:
+        resource_name: SystemLocale
+        SystemLocale: 'eu-EU'
+        IsSingleInstance: 'Yes'
+      register: SystemLocaleSet
+
+    - name:  Reboot After Locale Change 
+      win_reboot:
+        post_reboot_delay: 120
+        reboot_timeout: 1800
+      when: SystemLocaleSet.changed
+
+######################################################### APPS #################################################################
+
+    # - name: SCCM UNINSTALL 
+    #   win_shell: 'c:\windows\ccmsetup\ccmsetup.exe /uninstall'
+    #   ignore_errors: true
+
+    # - name: Wait for SCCM Uninstall - 10 minutes
+    #   pause:
+    #     minutes: 10
+
+    # - name: Wait for SCCM Uninstall - 10 minutes
+    #   pause: 
+    #     minutes: 10
+
+    # - name: Install SCCM Agent; AppID -
+    #   win_dsc:
+    #     resource_name: Package 
+    #     Ensure: 'Present'
+    #     Path: '{{ CoreApp_Source }}\DXC\SCCM Agent\ccmsetup.exe'
+    #     ProductId: '{CED8C647-34A2-8AD1-42B164438568}' #Version 5.00.9040.1000
+    #     #ProductId: '{CED8C647-34A2-8AD1-42B164438568}' #Version 5.00.8740-1031
+    #     Arguments: '{{ SCCM_Configuration }}'
+    #   ignore_errors: true
+    #   register: SCCMInstalled
+
+    # - name: Wait for SCCM Uninstall - 10 minutes
+    #   pause: 
+    #     minutes: 10
+
+    # - name: Reboot
+    #   win_reboot:
+    #     reboot_timeout: 1800
+    #     post_reboot_delay: 10
+    #   when: SCCMInstalled.changed 
+
+    # - name: 281_Aspect_RealtimeAdherance_8.2.2194_R2; AppId - 8484;
+    #   win-Dsc: 
+    #     resource_name: InstallerClass
+    #     PackageName: 'RealtimeAdherance'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '\\aalmpssyd201\sources\Packages\Aspect\281_Aspect_RealtimeAdherance_8.2.2194_R2\Package'
+    #     DetectionProductUninstallRegKeyValue: '{D3BF49AD-BABE-4F89-BAB9-E59A8E0BBD7B}'
+
+    # - name: Install SCCM Agent; AppID -
+    #   win_dsc:
+    #     resource_name: Package 
+    #     Ensure: 'Present'
+    #     Path: '\\aalmpssyd201\SMS_AP2\CMUClient\ccmsetup.exe'
+    #     Path: '\\aalmpssgp201\SMS_AP2\CMUClient\ccmsetup.exe'
+    #     Name: 'Configuration Manager Client' 
+    #     ProductId: '{CED8C647-34A2-8AD1-42B164438568}' #Version 5.00.9040.1000
+    #     #ProductId: '{6343A688-D881-4B6C-AC85-2384F0B839BD}' #Version 5.00.8740-1031
+    #     Arguments: '/mp:AALMPSSYD201.Wwg00m.rootdom.net SMSMP=AALMPSSGP201.Wwg00m.rootdom.net SMSSITECODE=AP2'
+    #     Arguments: '/mp:AALMPSSYD201.Wwg00m.rootdom.net SMSMP=AALMPSSGP201.Wwg00m.rootdom.net SMSSITECODE=AP1'
+    #   ignore_errors: true
+    #   register: SCCMInstalled
+
+    # - name: Reboot
+    #   win_reboot:
+    #     reboot_timeout: 1800
+    #     post_reboot_delay: 120
+    #   when: SCCMInstalled.changed
+
+    # - name: Wait for WinRm 
+    #   wait_for_connection: 
+    #     delay: 10
+    #     timeout: 1500
+
+    - name: Remove appx 21H2 [SHELL] ; AppId -       
+      win_shell: Remove-AppxProvisionedPackage -Online -PackageName "Microsoft.ScreenSketch_2020.814.2355.0_neutral_~_8wekyb3d8bbwe" -ErrorAction SilentlyContinue >> c:\Windows\installer\SnipAndSketch_removal.txt 
+      ignore_erros: true
+
+    - name: APAC_SchUseStrongCrypto_1.0; AppId - 7100 - reopen next build 
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'SchUseStrongCrypto'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\Allianz\ App\7100_APAC_SchUseStrongCrypto_1.0_PKG_R1\Package\7100_APAC_SchUseStrongCrypto_1.0_PKG_R1\'
+        DetectionProductUnistallRegKeyValue: '{6CE61148-87F0-4A8F-A843-78E7C414CA92}'
+
+    - name: Reboot Action [SHELL]
+      win_reboot:
+        post_reboot_delay: 30
+
+    - name: Cubwise_PulseExcelTrigger_5.8.2; AppId - 6759 
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'PulseExcelTrigger'
+        Ensure: 'Present'
+        Executable: 'Install.bat'
+        Source: '\\aalmpssgp201\sources\Packages\Cubwise\6759_Cubwise_PulseExcelTrigger_5.8.2_PKG_R1\'
+        DetectionProductUnistallRegKeyValue: '{B435CD2F-7711-4F2F-A119-C9D49CA7EC52}'
+
+    - name: 100_Microsoft_SQLServer2012NativeClient_2012_R2; AppId - 8544 
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'Microsoft SQL Server 2012 Native Client'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\Microsoft\100_Microsoft_SQLServer2012NativeClient_2012_R2\Package\'
+        DetectionProductUnistallRegKeyValue: '{B9274744-8BAE-4874-8E59-2610919CD419}'
+
+    - name: 410_IBM_i2iBaseDesigner_9.2_R1; AppId - 8544 
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'IBM i2 iBase 9'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\IBM\410_IBM_i2iBaseDesigner_9.2_R1\Package\'
+        DetectionProductUnistallRegKeyValue: '{4EE8C01B-C8A5-4CC7-84C2-73AB58411C4A}'
+
+    - name: 199_BMC_RemedyUser_7.6.3_R4; AppId - 199 
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'BMC RemedyUser 7.6.3'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\BMC Remedy\199_BMC_RemedyUser_7.6.3_R4\Package\' 
+        DetectionProductUnistallRegKeyValue: '{1AF653E4-6C23-461B-8FD1-398290D4C3CB}'
+
+    # - name: 26_IBM_PersonalCommunications_6.0.13_R1; AppId - 26 
+    #   win_dsc: 
+    #     resource_name: InstallerClass
+    #     PackageName: 'IBM PersonalCommunications 6.0.13'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '\\aalmpssgp201\sources\Packages\IBM\26_IBM_PersonalCommunications_6.0.13_R1\Package\'
+    #     DetectionProductUnistallRegKeyValue: '{234D4711-B466-497E-8600-A417999FAC14}'
+
+    - name:  Copy IBM_PersonalCommunications_Font_R1 1.0 EN; AppId - 591 
+      win_dsc: 
+        resource_name: File
+        Ensure: 'Present'
+        SourcePath: '\\aalmpssyd201\sources\Packages\IBM\IBM_PersonalCommunications_Font_R1\Package\'
+        DetectionPath: 'C:\Windows\Fonts\'
+        Recurse: true
+        Type: Directory
+
+    - name: SQLServer2008R2NativeClient 10.51_R1; AppId - 274 
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'SQLServer2008R2NativeClient 10.51'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssgp201\sources\Packages\Microsoft\274_Microsoft_SQLServer2008R2NativeClient_10.51_R1\Package\' 
+        DetectionProductUnistallRegKeyValue: '{471AAD2C-9078-4DAC-BD43-FA10FB7C3FCE}'   
+      register: SQL20088Installed   
+
+    - name: Reboot After SQL2008 install 
+      win_reboot:
+        reboot_timeout: 1800
+        post_reboot_delay: 120
+      when: SQL2008Installed.changed
+  
+    # - name: 219_SAP_SAPBusinessObjectAnalysis_2.7.2_R2; AppId - 219 #Add to APAU 
+    #   win_dsc: 
+    #     resource_name: InstallerClass
+    #     PackageName: 'SAPBusinessObjectAnalysis_2.7.2_R2'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '\\aalmpssdy201\sources\Packages\SAP\219_SAP_SAPBusinessObjectAnalysis_2.7.2_R2\'
+    #     DetectionProductRegistryKeys: 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\SAPExcelAddIn'
+
+    # - name: 111_SAPGUI_7.60PL8_R4; AppId - 111
+    #   win_dsc:
+    #     resource_name: InstallerClass
+    #     PackageName: 'SAP GUI'
+    #     Ensure: 'Present'
+    #     Executable: 'Install.vbs'
+    #     Source: '\\aalmpssyd201\sources\Packages\SAP\111_SAP_GUI_7.60PL8_R4\' 
+    #     DetectionProductRegistryKeys: 'HKLM:\SOTWARE\WOW6432Node\CSC\Packages\SAPGUI\'
+    
+    - name: 59_Techsmith_Snagit_19.1.6_R4; AppId - 59
+      win_dsc: 
+        resource_name: InstallerClass
+        PackageName: 'Snagit 19.1.6'
+        Ensure: 'Present'
+        Executable: 'Install.vbs'
+        Source: '\\aalmpssyd201\sources\Packages\Techsmith\59_Techsmith_Snagit_19.1.6_R4\Package\' 
+        DetectionProductUnistallRegKeyValue: '{43469306-2357-4448-b041-9c564f45b729}'
+
+        
+
+
+        
